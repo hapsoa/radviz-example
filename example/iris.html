@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="../lib/d3.js"></script>
+    <script src="../src/component-utils.js"></script>
+    <script src="../src/tooltip-component.js"></script>
+    <script src="../src/radviz-component.js"></script>
+    <!-- <script src="../radviz-min.js"></script> -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <script src="../lib/lodash.js"></script>
+</head>
+
+<body>
+
+    <div class="container"></div>
+
+    <script>
+        // radviz 의 설정을 해준다.
+        // dimensions 와 설정과, 이벤트를 달아준다.
+        var dimensions = ['sepalLength', 'sepalWidth', 'petalLength', 'petalWidth'];
+        var radviz = radvizComponent()
+            .config({
+                el: document.querySelector('.container'),
+                colorAccessor: function(d) {
+                    return d['species'];
+                },
+                dimensions: dimensions,
+                size: 600,
+                margin: 100,
+                useRepulsion: false,
+                drawLinks: false,
+                tooltipFormatter: function(d) {
+                    return '<h1>' + d.species + '</h1>' + dimensions.map(function(dB) {
+                        return dB + ': ' + d[dB];
+                    }).join('<br />');
+                }
+            });
+
+        d3.json('../data/iris.json', function(error, data) {
+            radviz.render(data);
+        });
+    </script>
+
+</body>
+
+</html>
