@@ -1,3 +1,5 @@
+# --- Copy-Example ---
+
 ## What is Radviz?
 
 <p align="center">

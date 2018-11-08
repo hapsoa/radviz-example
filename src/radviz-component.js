@@ -31,12 +31,18 @@ var radvizComponent = function() {
         var dimensionNamesNormalized = config.dimensions.map(function(d) {
             return d + normalizeSuffix;
         });
-        var thetaScale = d3.scale.linear().domain([0, dimensionNamesNormalized.length]).range([0, Math.PI * 2]);
 
+        // 각도 설정 thetaScale(0~) => 파라미터가 커질수록 각도도 커지는듯
+        // dimensions 수 만큼 각도를 설정한다.
+        var thetaScale = d3.scale.linear().domain([0, dimensionNamesNormalized.length]).range([0, Math.PI * 2]);
+        // 총 테두리 반지름
         var chartRadius = config.size / 2 - config.margin;
+        // 데이터 갯수
         var nodeCount = data.length;
+        // 총 테두리 지름
         var panelSize = config.size - config.margin * 2;
 
+        // dimension들의 노드화
         var dimensionNodes = config.dimensions.map(function(d, i) {
             var angle = thetaScale(i);
             var x = chartRadius + Math.cos(angle) * chartRadius * config.zoomFactor;
@@ -254,13 +260,12 @@ var radvizComponent = function() {
                 return d[dimension];
             }))).range([0, 1]);
         });
-
+        // (dimension)_normalized 속성을
         data.forEach(function(d) {
             config.dimensions.forEach(function(dimension) {
                 d[dimension + '_normalized'] = normalizationScales[dimension](d[dimension]);
             });
         });
-        console.log(data);
 
         return data;
     };
