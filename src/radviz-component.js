@@ -28,6 +28,7 @@ var radvizComponent = function() {
     var render = function(data) {
         data = addNormalizedValues(data);
         var normalizeSuffix = '_normalized';
+        // [dimension1_normalized, dimension2_normalized, ...]
         var dimensionNamesNormalized = config.dimensions.map(function(d) {
             return d + normalizeSuffix;
         });
@@ -42,7 +43,7 @@ var radvizComponent = function() {
         // 총 테두리 지름
         var panelSize = config.size - config.margin * 2;
 
-        // dimension들의 노드화
+        // dimension들의 노드화 [{...}, {...}, ...]
         var dimensionNodes = config.dimensions.map(function(d, i) {
             var angle = thetaScale(i);
             var x = chartRadius + Math.cos(angle) * chartRadius * config.zoomFactor;
@@ -56,16 +57,22 @@ var radvizComponent = function() {
             };
         });
 
-        var linksData = [];
+        const linksData = []; // [{...}, {...}, ...]
         data.forEach(function(d, i) {
             dimensionNamesNormalized.forEach(function(dB, iB) {
+                // console.log(i);
+                // console.log('nodeCount', nodeCount);
+                // console.log(iB);
+                // console.log('d : ', d);
+                // console.log('dB : ', dB);
                 linksData.push({
-                    source: i,
-                    target: nodeCount + iB,
-                    value: d[dB]
+                    source: i, // 숫자 0~149
+                    target: nodeCount + iB, // 숫자 150 + 0~3
+                    value: d[dB] // data 객체에 속성 dimension1_normalized
                 });
             });
         });
+        // console.log(linksData[0]);
 
         force.size([panelSize, panelSize])
             .linkStrength(function(d) {
@@ -75,26 +82,26 @@ var radvizComponent = function() {
             .links(linksData)
             .start();
 
-        // Basic structure
+        // Basic structure  SVG 그리기
         var svg = d3.select(config.el)
             .append('svg')
             .attr({
                 width: config.size,
                 height: config.size
             });
-
+        // background 큰 배경 그리기
         svg.append('rect')
             .classed('bg', true)
             .attr({
                 width: config.size,
                 height: config.size
             });
-
+        // margin을 제외한 곳에 네모 g 그리기
         var root = svg.append('g')
             .attr({
                 transform: 'translate(' + [config.margin, config.margin] + ')'
             });
-
+        // g에다 큰 테두리 원 그리기
         var panel = root.append('circle')
             .classed('panel', true)
             .attr({
@@ -103,6 +110,7 @@ var radvizComponent = function() {
                 cy: chartRadius
             });
 
+        // 확장시키고 싶을 때
         if(config.useRepulsion) {
             root.on('mouseenter', function(d) {
                 force.chargeDistance(80).alpha(0.2);
@@ -114,7 +122,7 @@ var radvizComponent = function() {
             });
         }
 
-        // Links
+        // Links. 노드와 dimensions 의 선을 그린다면
         if(config.drawLinks) {
             var links = root.selectAll('.link')
                 .data(linksData)
@@ -122,7 +130,7 @@ var radvizComponent = function() {
                 .classed('link', true);
         }
 
-        // Nodes
+        // Nodes. data 노드그리기
         var nodes = root.selectAll('circle.dot')
             .data(data)
             .enter().append('circle')
@@ -133,7 +141,7 @@ var radvizComponent = function() {
                     return config.colorScale(config.colorAccessor(d));
                 }
             })
-            .on('mouseenter', function(d) {
+            .on('mouseenter', function(d) { // 노드에 마우스 진입시 툴팁보이기
                 if(config.useTooltip) {
                     var mouse = d3.mouse(config.el);
                     tooltip.setText(config.tooltipFormatter(d)).setPosition(mouse[0], mouse[1]).show();
@@ -141,7 +149,7 @@ var radvizComponent = function() {
                 events.dotEnter(d);
                 this.classList.add('active');
             })
-            .on('mouseout', function(d) {
+            .on('mouseout', function(d) { // 노드에 마우스 나갈시 툴팁사라지기
                 if(config.useTooltip) {
                     tooltip.hide();
                 }
@@ -149,7 +157,7 @@ var radvizComponent = function() {
                 this.classList.remove('active');
             });
 
-        // Labels
+        // Labels. 테두리의 dimensions 노드들 그리기
         var labelNodes = root.selectAll('circle.label-node')
             .data(dimensionNodes)
             .enter().append('circle')
@@ -163,7 +171,7 @@ var radvizComponent = function() {
                 },
                 r: 4
             });
-
+        // dimensions 노드들의 텍스트 그리기
         var labels = root.selectAll('text.label')
             .data(dimensionNodes)
             .enter().append('text')
