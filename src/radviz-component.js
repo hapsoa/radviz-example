@@ -204,7 +204,7 @@ var radvizComponent = function() {
                 return d.name;
             });
 
-        // Update force
+        // Update force. tick event 일때마다 인듯
         force.on('tick', function() {
             if(config.drawLinks) {
                 links.attr({
@@ -222,7 +222,7 @@ var radvizComponent = function() {
                     }
                 });
             }
-
+            // 노드의 위치를 그린다.
             nodes.attr({
                 cx: function(d) {
                     return d.x;
